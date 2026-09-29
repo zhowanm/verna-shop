@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ProductVariant extends Model
 {
@@ -35,5 +36,13 @@ class ProductVariant extends Model
     public function inventory(): HasOne
     {
         return $this->hasOne(Inventory::class);
+    }
+
+    public function attributeValues(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            AttributeValue::class,
+            'product_variant_attribute_values'
+    );
     }
 }
