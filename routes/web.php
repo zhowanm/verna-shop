@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
@@ -20,3 +21,7 @@ Route::get('/admin', [DashboardController::class, 'index'])
 Route::resource('/admin/categories', CategoryController::class)
     ->middleware('admin')
     ->names('admin.categories');
+
+Route::resource('/admin/products', AdminProductController::class)
+    ->middleware('admin')
+    ->names('admin.products');
