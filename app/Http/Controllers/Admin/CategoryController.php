@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
@@ -74,24 +75,75 @@ class CategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Category $category)
     {
-        //
+        $parentCategories = Category::query()
+            ->where('id', '!=', $category->id)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+            return view('admin.categories.edit', [
+                'category' => $category,
+                'parentCategories' => $parentCategories,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update()
+    public function update(Request $request, Category $category)
     {
-        //
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                'alpha_dash',
+                Rule::unique('categories', 'slug')->ignore($category->id),
+            ],
+            'parent_id' => [
+                'nullable',
+                'integer',
+                'exists:categories,id',
+            ],
+            'description' => ['nullable', 'string'],
+            'sort_order' => ['required', 'integer', 'min:0'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        $validated['is_active'] = $request->boolean('is_active');
+
+        $category->update($validated);
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'دسته‌بندی با موفقیت ویرایش شد.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Category $category)
     {
-        //
+        if ($category->children()->exists()) {
+            return redirect()
+                ->route('admin.categories.index')
+                ->with('error', 'این دسته‌بندی دارای زیر‌دسته است و فعلاً قابل حذف نیست.');
+        }
+
+        if ($category->products()->exists()) {
+             return redirect()
+                ->route('admin.categories.index')
+                ->with('error', 'این دسته‌بندی دارای محصول است و قابل حذف نیست.');
+        }
+
+        $category->delete();
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'دسته‌بندی با موفقیت حذف شد.');
     }
 }

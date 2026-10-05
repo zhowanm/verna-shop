@@ -20,7 +20,7 @@
         </div>
 
         <a
-            href="#"
+            href="{{ route('admin.categories.create') }}"
             class="rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-slate-200"
         >
             افزودن دسته‌بندی
@@ -64,12 +64,30 @@
                             </td>
 
                             <td class="px-5 py-4">
-                                <a
-                                    href="#"
-                                    class="font-semibold text-slate-300 hover:text-white"
-                                >
-                                    ویرایش
-                                </a>
+                                <div class="flex items-center gap-4">
+                                    <a
+                                        href="{{ route('admin.categories.edit', $category) }}"
+                                        class="font-semibold text-slate-300 hover:text-white"
+                                    >
+                                        ویرایش
+                                    </a>
+
+                                    <form
+                                        method="POST"
+                                        action="{{ route('admin.categories.destroy', $category) }}"
+                                        onsubmit="return confirm('آیا از حذف این دسته‌بندی مطمئن هستید؟');"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button
+                                            type="submit"
+                                            class="font-semibold text-red-400 transition hover:text-red-300"
+                                        >
+                                            حذف
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
