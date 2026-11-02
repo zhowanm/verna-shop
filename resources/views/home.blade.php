@@ -149,107 +149,128 @@
 
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
-            @foreach ([
-                ['name' => 'فلنج استیل PN16', 'code' => 'VR-FL-PN16'],
-                ['name' => 'فلنج جوشی', 'code' => 'VR-WF-001'],
-                ['name' => 'زانو جوشی 90 درجه', 'code' => 'VR-EL-090'],
-                ['name' => 'سه‌راهی استیل', 'code' => 'VR-TEE-001'],
-            ] as $product)
+        @forelse ($products as $product)
 
-                <article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+    @php
+        $variant = $product->variants->first();
+        $image = $product->images->firstWhere('is_primary', true)
+            ?? $product->images->first();
+    @endphp
 
-                    <div class="flex aspect-square items-center justify-center bg-slate-800 text-6xl">
-                        🔩
-                    </div>
+    <article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
 
-                    <div class="p-5">
-
-                        <p class="text-xs text-slate-500">
-                            {{ $product['code'] }}
-                        </p>
-
-                        <h3 class="mt-2 font-bold text-white">
-                            {{ $product['name'] }}
-                        </h3>
-
-                        <p class="mt-2 text-sm text-slate-400">
-                            مشخصات فنی و موجودی محصول در صفحه محصول قابل مشاهده خواهد بود.
-                        </p>
-
-                        <div class="mt-5 flex items-center justify-between">
-
-                            <span class="text-sm font-medium text-slate-300">
-                                موجودی آنلاین
-                            </span>
-
-                            <button
-                                type="button"
-                                class="rounded-lg border border-slate-700 px-3 py-2 text-sm text-white transition hover:bg-slate-800"
-                            >
-                                جزئیات
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </article>
-
-            @endforeach
-
+        <div class="flex aspect-square items-center justify-center bg-slate-800">
+            @if ($image)
+                <img
+                    src="{{ \Illuminate\Support\Facades\Storage::url($image->path) }}"
+                    alt="{{ $image->alt_text ?: $product->name }}"
+                    class="h-full w-full object-cover"
+                >
+            @else
+                <span class="text-6xl">🔩</span>
+            @endif
         </div>
 
-    </section>
+        <div class="p-5">
 
+            <p class="text-xs text-slate-500">
+                {{ $product->sku ?: 'بدون کد محصول' }}
+            </p>
 
-    <section class="border-t border-slate-800 bg-slate-900">
+            <h3 class="mt-2 font-bold text-white">
+                {{ $product->name }}
+            </h3>
 
-        <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <p class="mt-2 text-sm text-slate-400">
+                {{ $product->short_description ?: 'برای مشاهده مشخصات فنی محصول، جزئیات را انتخاب کنید.' }}
+            </p>
 
-            <div class="grid gap-8 md:grid-cols-3">
+            <div class="mt-5 flex items-center justify-between gap-3">
 
-                <div>
-                    <div class="text-3xl">✓</div>
+                <span class="text-sm font-medium text-slate-300">
+                    @if ($variant)
+                        @if ((float) $variant->price > 0)
+                            {{ number_format((float) $variant->price) }} تومان
+                        @else
+                            استعلام قیمت
+                        @endif
+                    @else
+                        استعلام قیمت
+                    @endif
+                </span>
 
-                    <h3 class="mt-4 font-bold text-white">
-                        اطلاعات فنی
-                    </h3>
-
-                    <p class="mt-2 text-sm leading-6 text-slate-400">
-                        مشخصات فنی محصولات به‌صورت ساختاریافته نمایش داده می‌شود.
-                    </p>
-                </div>
-
-
-                <div>
-                    <div class="text-3xl">📦</div>
-
-                    <h3 class="mt-4 font-bold text-white">
-                        موجودی و قیمت
-                    </h3>
-
-                    <p class="mt-2 text-sm leading-6 text-slate-400">
-                        قیمت و موجودی هر محصول و هر مدل به‌صورت جداگانه قابل مدیریت است.
-                    </p>
-                </div>
-
-
-                <div>
-                    <div class="text-3xl">🛒</div>
-
-                    <h3 class="mt-4 font-bold text-white">
-                        خرید آنلاین
-                    </h3>
-
-                    <p class="mt-2 text-sm leading-6 text-slate-400">
-                        کاربران پس از ورود می‌توانند محصولات موردنظر خود را به سبد خرید اضافه کنند.
-                    </p>
-                </div>
+                <a
+                    href="{{ route('products.show', $product->slug) }}"
+                    class="rounded-lg border border-slate-700 px-3 py-2 text-sm text-white transition hover:bg-slate-800"
+                >
+                    جزئیات
+                </a>
 
             </div>
 
         </div>
 
-    </section>
+    </article>
 
-@endsection
+    @empty
+    <p class="col-span-full py-10 text-center text-slate-400">
+        هنوز محصولی برای نمایش ثبت نشده است.
+    </p>
+    @endforelse
+
+        </div>
+
+     </section>
+
+
+        <section class="border-t border-slate-800 bg-slate-900">
+
+            <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+
+                <div class="grid gap-8 md:grid-cols-3">
+
+                    <div>
+                        <div class="text-3xl">✓</div>
+
+                        <h3 class="mt-4 font-bold text-white">
+                        اطلاعات فنی
+                        </h3>
+
+                        <p class="mt-2 text-sm leading-6 text-slate-400">
+                            مشخصات فنی محصولات به‌صورت ساختاریافته نمایش داده می‌شود.
+                        </p>
+                    </div>
+
+
+                    <div>
+                        <div class="text-3xl">📦</div>
+
+                        <h3 class="mt-4 font-bold text-white">
+                            موجودی و قیمت
+                        </h3>
+
+                        <p class="mt-2 text-sm leading-6 text-slate-400">
+                            قیمت و موجودی هر محصول و هر مدل به‌صورت جداگانه قابل مدیریت است.
+                        </p>
+                    </div>
+
+
+                    <div>
+                        <div class="text-3xl">🛒</div>
+
+                        <h3 class="mt-4 font-bold text-white">
+                            خرید آنلاین
+                        </h3>
+
+                        <p class="mt-2 text-sm leading-6 text-slate-400">
+                            کاربران پس از ورود می‌توانند محصولات موردنظر خود را به سبد خرید اضافه کنند.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    @endsection

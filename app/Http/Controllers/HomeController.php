@@ -10,7 +10,15 @@ class HomeController extends Controller
     {
         $products = Product::query()
             ->where('is_active', true)
-            ->with(['category', 'brand', 'images', 'variants'])
+            ->with([
+                'category',
+                'brand',
+                'images',
+                'variants' => function ($query) {
+                    $query->where('is_active', true)
+                        ->with('inventory');
+                },
+            ])
             ->orderBy('sort_order')
             ->orderBy('name')
             ->take(8)
