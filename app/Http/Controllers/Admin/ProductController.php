@@ -56,8 +56,16 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'category_id' => ['required', 'integer', 'exists:categories,id'],
-            'brand_id' => ['nullable', 'integer', 'exists:brands,id'],
+            'category_id' => [
+                'required',
+                'integer',
+                Rule::exists('categories', 'id')->where('is_active', true),
+            ],
+            'brand_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('brands', 'id')->where('is_active', true),
+            ],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:products,slug'],
             'sku' => ['required', 'string', 'max:255', 'unique:products,sku'],
@@ -115,8 +123,16 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'category_id' => ['required', 'integer', 'exists:categories,id'],
-            'brand_id' => ['nullable', 'integer', 'exists:brands,id'],
+            'category_id' => [
+                'required',
+                'integer',
+                Rule::exists('categories', 'id')->where('is_active', true),
+            ],
+            'brand_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('brands', 'id')->where('is_active', true),
+            ],
             'name' => ['required', 'string', 'max:255'],
             'slug' => [
                 'required',
@@ -150,8 +166,24 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Product $product)
     {
-        //
+        if (
+            $product->variants()->exists() ||
+            $product->images()->exists()
+        ) {
+            return redirect()
+                ->route('admin.products.index')
+                ->with(
+                    'error',
+                    'این محصول دارای تنوع یا تصویر است و فعلاً قابل حذف نیست. آن را غیرفعال کنید.'
+                );
+        }
+
+        $product->delete();
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'محصول با موفقیت حذف شد.');
     }
 }
